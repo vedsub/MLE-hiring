@@ -43,7 +43,7 @@ DEFAULT_OUTPUT = TICKETS_DIR / "output.csv"
 API_SPECS_PATH = DATA_DIR / "api_specs" / "internal_tools.json"
 
 # ─── Tunables ─────────────────────────────────────────────────────────────────
-MAX_CONCURRENT = 12        # Semaphore cap — adjust for rate limits
+MAX_CONCURRENT = 6       # Semaphore cap — adjust for rate limits
 TOP_K_DOCS = 5             # BM25 retrieved docs per ticket
 MAX_DOC_CHARS = 900        # Characters per doc passed to LLM
 MODEL = "gpt-4o-mini"
@@ -119,9 +119,21 @@ _INJECTION_PATTERNS: list[re.Pattern] = [
     re.compile(r'your\s+(real\s+)?instructions?\s+are', re.I),
     re.compile(r'social\s+engineer', re.I),
     re.compile(r'manipulat(e|ing)\s+(the\s+)?(ai|agent|assistant|system)', re.I),
+    re.compile(r'which (document|file|corpus|source)\s+(did you|do you)\s+(use|pull|retrieve|get)', re.I),
+    re.compile(r'(what|which)\s+(file|document|path)\s+(was|were|is|are)\s+(used|retrieved|referenced)', re.I),
 ]
 
 def detect_injection(text: str) -> bool:
+    # Detect base64-encoded injection in any substring
+    import base64 as _b64
+    for chunk in re.findall(r'[A-Za-z0-9+/]{20,}={0,2}', text):
+        try:
+            decoded = _b64.b64decode(chunk + '==').decode('utf-8', errors='ignore')
+            if any(p.search(decoded) for p in _INJECTION_PATTERNS):
+                return True
+        except Exception:
+            pass
+
     return any(p.search(text) for p in _INJECTION_PATTERNS)
 
 # ─── Language Detection ───────────────────────────────────────────────────────
