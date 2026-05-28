@@ -274,7 +274,31 @@ Escalation precision:
   - Before choosing "escalated", ask: "Is there a concrete question here that the corpus can answer?" If yes, prefer "replied" with clear caveats.
 
 ═══════════ ACTIONS ═══════════
-Available API actions (use only when clearly appropriate):
+You MUST populate actions_taken with tool calls for these situations:
+
+TRIGGER → TOOLS TO USE:
+- Fraud / unauthorized transaction reported → lock_account + escalate_to_human
+- Account hacked / compromised → lock_account + escalate_to_human  
+- Identity theft reported → lock_account + escalate_to_human
+- Refund request (any amount) → verify_identity first, then escalate_to_human
+- User wants account deleted → verify_identity + escalate_to_human
+- Legal threat received → escalate_to_human (priority: urgent)
+- General escalation → escalate_to_human
+- Account lookup needed to answer question → lookup_account
+
+FORMAT for actions_taken (must match this schema exactly):
+[
+  {{"name": "verify_identity", "parameters": {{"user_identifier": "from ticket context"}}}},
+  {{"name": "lock_account", "parameters": {{"user_identifier": "from ticket context", "lock_reason": "suspected_fraud"}}}},
+  {{"name": "escalate_to_human", "parameters": {{"priority": "high", "department": "fraud", "summary": "brief reason"}}}},
+  {{"name": "issue_refund", "parameters": {{"amount": 0.00, "currency": "USD", "reason": "brief reason"}}}},
+  {{"name": "lookup_account", "parameters": {{"user_identifier": "from ticket context"}}}},
+  {{"name": "send_notification", "parameters": {{"user_identifier": "from ticket context", "message": "brief message"}}}}
+]
+
+If no action is needed (pure FAQ, out-of-scope), output [].
+
+Available tools spec:
 {tools_json}
 
 ═══════════ OUTPUT FORMAT ═══════════
