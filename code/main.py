@@ -18,6 +18,15 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Optional
+# Auto-load .env if present
+from pathlib import Path as _Path
+_env = _Path(__file__).parent.parent / ".env"
+if _env.exists():
+    for _line in _env.read_text().splitlines():
+        if "=" in _line and not _line.startswith("#"):
+            _k, _v = _line.split("=", 1)
+            import os as _os
+            _os.environ.setdefault(_k.strip(), _v.strip())
 
 try:
     from rank_bm25 import BM25Okapi
@@ -276,7 +285,7 @@ Respond ONLY with a single valid JSON object — no prose, no markdown fences:
   "response": "<user-facing message; grounded in corpus; no PII; cite sources where relevant>",
   "justification": "<internal reasoning: risk assessment, adversarial patterns, escalation rationale, corpus gaps>",
   "request_type": "product_issue" | "feature_request" | "bug" | "invalid",
-  "confidence_score": <float 0.0–1.0, well-calibrated — 0.9+ only when multiple corpus sources agree>,
+  "confidence_score": <float 0.0–1.0. CALIBRATION GUIDE: 0.95+ only for injection detection or 3+ agreeing corpus sources. 0.80-0.90 for clear single-source answers. 0.65-0.80 for answers inferred from corpus with some gaps. 0.40-0.65 for ambiguous or cross-domain tickets. NEVER use 0.90+ by default — most tickets should be 0.70-0.85>,
   "source_documents": "<pipe-separated corpus paths actually used, e.g. data/claude/billing.md|data/visa/disputes.md>",
   "risk_level": "low" | "medium" | "high" | "critical",
   "pii_detected": true | false,
