@@ -605,7 +605,7 @@ async def run(input_path: Path, output_path: Path) -> None:
       reader = csv.DictReader(f)
       # Normalize column names to lowercase
       tickets = [
-        {k.lower(): v for k, v in row.items()}
+        {k.lower(): v for k, v in row.items() if k is not None}
         for row in reader
       ]
     print(f"  {len(tickets)} tickets to process", file=sys.stderr)
