@@ -434,11 +434,27 @@ def validate_result(result: dict, injection_detected: bool, pii_local: bool) -> 
         result["language"] = "en"
 
     # actions_taken → JSON string for CSV
+    # actions_taken → JSON string for CSV
     actions = result.get("actions_taken", [])
     if not isinstance(actions, list):
         actions = []
-    result["actions_taken"] = json.dumps(actions)
 
+    # Prerequisite guard: verify_identity must come before any destructive action
+    DESTRUCTIVE = {"issue_refund", "lock_account", "delete_account", "modify_subscription"}
+
+    def get_name(a):
+        return a.get("name") or a.get("action", "")
+
+    has_destructive = any(get_name(a) in DESTRUCTIVE for a in actions)
+    has_verify = any(get_name(a) == "verify_identity" for a in actions)
+
+    if has_destructive and not has_verify:
+        actions.insert(0, {
+            "name": "verify_identity",
+            "parameters": {"user_identifier": "from ticket context"}
+        })
+
+    result["actions_taken"] = json.dumps(actions)
     # source_documents — keep as pipe-separated string
     src = result.get("source_documents", "") or ""
     result["source_documents"] = src if isinstance(src, str) else "|".join(src)
