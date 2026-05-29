@@ -1,0 +1,14 @@
+59583b5 fix: handle None column keys in CSV loading, edge case crash resolved
+6ba6e34 test: 15/15 predicted hidden test cases pass — multi-turn, homoglyph, impersonation, persona, cross-domain
+c4dc784 fix: deduplicate tool calls, prerequisite guard confirmed working (0 issues)
+4f51e5c fix: prerequisite guard wrong key bug — verify_identity now correctly prepended before lock_account
+741632b fix: populate actions_taken with tool calls for fraud/escalation/refund tickets
+58a6661 fix: recalibrate confidence scoring, avg reduced from 0.92 to 0.86
+233c50f fix: tighten escalation precision for support triage
+66338fa docs: complete ARCHITECTURE.md with self-assessment, add README and log.txt
+c0f3b3e fix: base64 injection detection using substring scanning
+1740c06 fix: add input columns to output schema, validate_output passes
+db4ccc0 Remove results announced date
+e162ec0 Update deadline to 1 week and replace AI judge with 1-on-1 interview
+99a0e0e Update submission instructions with Google Forms link
+ec78098 Initial commit: MLE Hiring Challenge Template (10/10 Difficulty)
