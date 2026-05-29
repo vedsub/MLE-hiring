@@ -454,6 +454,10 @@ def validate_result(result: dict, injection_detected: bool, pii_local: bool) -> 
             "parameters": {"user_identifier": "from ticket context"}
         })
 
+    # Deduplicate actions by name (keep first occurrence)
+    seen = set()
+    actions = [a for a in actions if get_name(a) not in seen and not seen.add(get_name(a))]
+
     result["actions_taken"] = json.dumps(actions)
     # source_documents — keep as pipe-separated string
     src = result.get("source_documents", "") or ""
